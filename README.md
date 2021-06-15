@@ -1,6 +1,6 @@
 # TSFilePicker
 
-Simple file picker.
+Simple file picker with automatic folder mode.
 
 ## Installation
 To add TSFilePicker to your Xcode project, select File -> Swift Packages -> Add Package Depedancy. Enter `https://github.com/FvnctionHQ/ts-filepicker`

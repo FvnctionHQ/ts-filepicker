@@ -10,11 +10,11 @@ import UIKit
 import MobileCoreServices
 import UniformTypeIdentifiers
 
-typealias TSFilePicker = TSFilePickerModuleCoordinator
+public typealias TSFilePicker = TSFilePickerModuleCoordinator
 
 extension TSFilePickerModuleCoordinator: TSFilePickerModuleInterface {
   
-    func select(documentTypes: [UTType], allowsMultipleFileSelection: Bool) {
+    public func select(documentTypes: [UTType], allowsMultipleFileSelection: Bool) {
         
         self.documentTypes = documentTypes
         
@@ -35,7 +35,7 @@ extension TSFilePickerModuleCoordinator: TSFilePickerModuleInterface {
 
 extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
 
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+    public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         if (urls.count == 0) {
             
             delegate?.TSFilePickerModuleDidFail(module: self, error: .failedToPick("No files found"))
@@ -130,7 +130,7 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
         
     }
     
-    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+    public func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         
         delegate?.TSFilePickerModuleDidCancel(module: self)
     }
@@ -139,7 +139,7 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
 
 }
 
-class TSFilePickerModuleCoordinator: NSObject {
+public class TSFilePickerModuleCoordinator: NSObject {
     
     var documentTypes: [UTType]!
     var pickerController: UIDocumentPickerViewController?
@@ -147,14 +147,13 @@ class TSFilePickerModuleCoordinator: NSObject {
     weak var delegate: TSFilePickerModuleDelegate?
     
     
-    init(presentationController: UIViewController, delegate: TSFilePickerModuleDelegate) {
+    public init(presentationController: UIViewController, delegate: TSFilePickerModuleDelegate) {
         super.init()
         self.presentationController = presentationController
         self.delegate = delegate
     }
     
-    deinit {
-    }
+    deinit {}
 
     
     func filetypeConfirmsToAnyOfTypes(filetype: UTType, types: [UTType]) -> Bool {

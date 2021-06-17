@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import MobileCoreServices
 import UniformTypeIdentifiers
+import TSLog
 
 public typealias TSFilePicker = TSFilePickerModuleCoordinator
 
@@ -24,7 +25,7 @@ extension TSFilePickerModuleCoordinator: TSFilePickerModuleInterface {
         } else {
             types = documentTypes
         }
-        pickerController = UIDocumentPickerViewController(forOpeningContentTypes: types)
+        pickerController = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
         pickerController!.delegate = self
         pickerController!.allowsMultipleSelection = allowsMultipleFileSelection
         presentationController?.present(pickerController!, animated: true)
@@ -149,11 +150,14 @@ public class TSFilePickerModuleCoordinator: NSObject {
     
     public init(presentationController: UIViewController, delegate: TSFilePickerModuleDelegate) {
         super.init()
+        TSLog.sI.logCall()
         self.presentationController = presentationController
         self.delegate = delegate
     }
     
-    deinit {}
+    deinit {
+        TSLog.sI.logCall()
+    }
 
     
     func filetypeConfirmsToAnyOfTypes(filetype: UTType, types: [UTType]) -> Bool {

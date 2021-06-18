@@ -9,7 +9,6 @@ import Foundation
 import UIKit
 import MobileCoreServices
 import UniformTypeIdentifiers
-import TSLog
 
 public typealias TSFilePicker = TSFilePickerModuleCoordinator
 
@@ -20,12 +19,12 @@ extension TSFilePickerModuleCoordinator: TSFilePickerModuleInterface {
         self.documentTypes = documentTypes
         
         var types: [UTType]
-        if (documentTypes.contains(.folder)) {
+        if (inFolderMode) {
             types = [.folder]
         } else {
             types = documentTypes
         }
-        pickerController = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
+        pickerController = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: !inFolderMode)
         pickerController!.delegate = self
         pickerController!.allowsMultipleSelection = allowsMultipleFileSelection
         presentationController?.present(pickerController!, animated: true)
@@ -47,7 +46,7 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
         
         var pickedDocuments: [TSFilePickerDocument] = []
         
-        if (documentTypes.contains(.folder)) {
+        if (inFolderMode) {
             
             let selectedFolderURL: URL = urls.first!
             let selectedFolderName = selectedFolderURL.lastPathComponent
@@ -104,7 +103,7 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
         }
         
         
-        if (!documentTypes.contains(.folder)) {
+        if (!inFolderMode) {
 
             
             for url in urls {
@@ -147,16 +146,19 @@ public class TSFilePickerModuleCoordinator: NSObject {
     weak var presentationController: UIViewController?
     weak var delegate: TSFilePickerModuleDelegate?
     
+    var inFolderMode: Bool {
+        get {
+            documentTypes.contains(.folder)
+        }
+    }
     
     public init(presentationController: UIViewController, delegate: TSFilePickerModuleDelegate) {
         super.init()
-        TSLog.sI.logCall()
         self.presentationController = presentationController
         self.delegate = delegate
     }
     
     deinit {
-        TSLog.sI.logCall()
     }
 
     

@@ -14,7 +14,7 @@ public typealias TSFilePicker = TSFilePickerModuleCoordinator
 
 extension TSFilePickerModuleCoordinator: TSFilePickerModuleInterface {
   
-    public func select(documentTypes: [UTType], allowsMultipleFileSelection: Bool) {
+    public func select(documentTypes: [UTType], allowsMultipleFileSelection: Bool, style: UIUserInterfaceStyle) {
         
         self.documentTypes = documentTypes
         
@@ -26,6 +26,7 @@ extension TSFilePickerModuleCoordinator: TSFilePickerModuleInterface {
         }
         pickerController = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: !inFolderMode)
         pickerController!.delegate = self
+        pickerController!.overrideUserInterfaceStyle = style
         pickerController!.allowsMultipleSelection = allowsMultipleFileSelection
         presentationController?.present(pickerController!, animated: true)
     }
@@ -43,11 +44,9 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
             
         }
         
-        
         var pickedDocuments: [TSFilePickerDocument] = []
         
         if (inFolderMode) {
-            
             let selectedFolderURL: URL = urls.first!
             let selectedFolderName = selectedFolderURL.lastPathComponent
             
@@ -62,28 +61,45 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
             
             var didFail = true
             var readError: NSError?
+            var fileReadError: NSError?
             
             NSFileCoordinator().coordinate(readingItemAt: selectedFolderURL, error: &readError) { (folderURL) in
             
-                let keys: [URLResourceKey] = [.nameKey, .isDirectoryKey, .contentTypeKey]
+                let keys: [URLResourceKey] = [.nameKey, .isDirectoryKey, .contentTypeKey, .ubiquitousItemDownloadingStatusKey]
                 let fileList = FileManager.default.enumerator(at: folderURL, includingPropertiesForKeys: keys)
 
 
                 
                 fileList!.forEach { fileURL in
-                   
-                    let url = fileURL as! URL
-                    let resourceValues = try! url.resourceValues(forKeys: Set(keys))
-                    let isDirectory = resourceValues.isDirectory ?? false
-                    let type = (resourceValues.contentType ?? .none)!
                     
-                    if !isDirectory {
-                        if (filetypeConfirmsToAnyOfTypes(filetype: type, types: documentTypes)) {
-                            let doc = TSFilePickerDocument(fileURL: url)
-                            pickedDocuments.append(doc)
+                    NSFileCoordinator().coordinate(readingItemAt: fileURL as! URL, error: &fileReadError) { (url) in
+                        let resourceValues = try! url.resourceValues(forKeys: Set(keys))
+                        let isDirectory = resourceValues.isDirectory ?? false
+                        
+                        var type: UTType
+                        if (resourceValues.contentType != nil) {
+                            type = resourceValues.contentType!
+                        } else {
+                            type = .fileURL
                         }
                         
+                        
+                        if !isDirectory {
+                            
+//                            if (downloadStatus == .notDownloaded) {
+//                               try! FileManager.default.startDownloadingUbiquitousItem(at: url)
+//                            }
+                            
+                            
+                            if (filetypeConfirmsToAnyOfTypes(filetype: type, types: documentTypes)) {
+                                let doc = TSFilePickerDocument(fileURL: url)
+                                pickedDocuments.append(doc)
+                            }
+                            
+                        }
                     }
+
+
                 }
                 
 
@@ -124,7 +140,6 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
                 
             }
         }
-        
         delegate?.TSFilePickerModuleDidPickFiles(module: self, files: pickedDocuments)
         
         
@@ -164,13 +179,17 @@ public class TSFilePickerModuleCoordinator: NSObject {
     
     func filetypeConfirmsToAnyOfTypes(filetype: UTType, types: [UTType]) -> Bool {
         
-        var confirms = false
+        if (filetype.identifier == "com.apple.icloud-file-fault") { return true }
         
+        
+        var confirms = false
+
         types.forEach { type in
+            print("\(filetype) confirms to \(type): \(filetype.conforms(to: type))")
             let c = filetype.conforms(to: type)
             if (c) { confirms = true }
         }
-        
+
         return confirms
     }
 

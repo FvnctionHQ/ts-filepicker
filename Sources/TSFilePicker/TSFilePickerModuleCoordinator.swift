@@ -51,13 +51,8 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
             let selectedFolderName = selectedFolderURL.lastPathComponent
             
             
-            let shouldStopAccessing = selectedFolderURL.startAccessingSecurityScopedResource()
-            
-            defer {
-                if shouldStopAccessing {
-                    selectedFolderURL.stopAccessingSecurityScopedResource()
-                }
-            }
+            _ = selectedFolderURL.startAccessingSecurityScopedResource()
+
             
             var didFail = true
             var readError: NSError?
@@ -92,6 +87,7 @@ extension TSFilePickerModuleCoordinator: UIDocumentPickerDelegate {
                             
                             
                             if (filetypeConfirmsToAnyOfTypes(filetype: type, types: documentTypes)) {
+                            //    _ = url.startAccessingSecurityScopedResource()
                                 let doc = TSFilePickerDocument(fileURL: url)
                                 pickedDocuments.append(doc)
                             }
